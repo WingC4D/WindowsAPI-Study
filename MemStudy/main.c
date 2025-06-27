@@ -42,7 +42,7 @@ int main()
 	CHAR *pBuffer = malloc(buffer_size);
 	if (!pBuffer) {
 		printf("Failed To Allocate Memory!\nExiting With Code: 1\n");
-		return ThrowMemoryError(1, ' ');
+		return ThrowMemoryError(1, (char *)' '); //<- How is this an int?! GCC is a funny one, 
 	}
 	//Creating the Original Self Allocated memory Space
 	strcpy_s(pBuffer, buffer_size, string);
