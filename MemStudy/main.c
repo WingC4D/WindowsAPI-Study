@@ -59,9 +59,14 @@ int main()
 	printf("Finished memcpy()!\nCalling SecureZeroMemory()...\n");
 	SecureZeroMemory(pBuffer, strlen(pBuffer));
 	PrintContentAddressCall("pBuffer", "SecureZeroMemory", pBuffer, "free");
-	/*HeapAlloc()*/
 	free(pBuffer);
 	PrintFreed("\"pBuffer\" / Heap Memory");
+	printf("Calling HeapAlloc...");
+	printf("Calling GetProcessHeap()...");
+	void *hpBuffer = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, buffer_size);
+	if (!hpBuffer) {
+		return ThrowMemoryError(4, " Heap ");
+	}
 	PrintContentAddressCall("vpBuffer", "memcpy", vpBuffer, "SecureZeroMemory");
 	SecureZeroMemory(vpBuffer, buffer_size);
 	PrintContentAddressCall("vpBuffer", "SecureZeroMemory", vpBuffer, "VirtualFree");
