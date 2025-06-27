@@ -29,7 +29,7 @@ static void PrintContentAddressCall(char *buffer_name, char *function_call_1, vo
 
 int main()
 {
-	CHAR *string  = "[#] Maldev Academy Is The Best Will Learn LowLevel Systems Architechture!\n\0";
+	CHAR *string  = "[#] I Learn LowLevel Systems Architechture!\n\0";
 	printf("Address of string: %p\n", string);
 	CHAR *string1 = "[#] This Is The Example For malloc, VirtualAlloc, free & VirtualFree!\n\0";
 	CHAR *string2 = "[#] malloc() Arguments:\n1.size_t: BufferSize\n\0";
