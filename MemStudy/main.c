@@ -29,20 +29,24 @@ static void PrintContentAddressCall(char *buffer_name, char *function_call_1, vo
 
 int main()
 {
-	char *string = "I Will Learn LowLevel Systems Architechture!\n\0";
-	char *string1 = "This Is The Example For malloc, VirtualAlloc, free & VirtualFree!\n\0";
-	char *string2 = "malloc() Arguments:\n1.size_t: BufferSize\n\0";
-	char *string3 = "VirtualAlloc() Arguments:\n1. LPVOID: NULL\n2. size_t: buffer_size\n3. DWORD: MEM_RESERVE | MEM_COMMIT\n4. DWORD: PAGE_READWRITE\n\0";
-	char* string4 = "free() Arguments:\n1.void: (char *)pBuffer\n\0";
-	char* string5 = "VirtualFree() Arguements:\n1. LPVOID: buffer\n2. SIZE_T: 0\n3. DWORD: MEM_FREE\n\0";
-	size_t buffer_size = strlen(string) + strlen(string1) + strlen(string2) + strlen(string3) + strlen(string4) + strlen(string5) + 1;
+	CHAR *string  = "[#] Maldev Academy Is The Best Will Learn LowLevel Systems Architechture!\n\0";
+	printf("Address of string: %p\n", string);
+	CHAR *string1 = "[#] This Is The Example For malloc, VirtualAlloc, free & VirtualFree!\n\0";
+	CHAR *string2 = "[#] malloc() Arguments:\n1.size_t: BufferSize\n\0";
+	CHAR *string3 = "[#] VirtualAlloc() Arguments:\n1. LPVOID: NULL\n2. size_t: buffer_size\n3. DWORD: MEM_RESERVE | MEM_COMMIT\n4. DWORD: PAGE_READWRITE\n\0";
+	CHAR *string4 = "[#] free() Arguments:\n1.void: (char *)pBuffer\n\0";
+	CHAR *string5 = "[#] VirtualFree() Arguements:\n1. LPVOID: buffer\n2. SIZE_T: 0\n3. DWORD: MEM_FREE\n\0";
+	const SIZE_T buffer_size = strlen(string) + strlen(string1) + strlen(string2) + strlen(string3) + strlen(string4) + strlen(string5) + 1;
 	printf("Calling malloc()...\n");
-	char *pBuffer = malloc(buffer_size);
+	//malloc()
+	CHAR *pBuffer = malloc(buffer_size);
 	if (!pBuffer) {
 		printf("Failed To Allocate Memory!\nExiting With Code: 1\n");
 		return ThrowMemoryError(1, ' ');
 	}
+	//Creating the Original Self Allocated memory Space
 	strcpy_s(pBuffer, buffer_size, string);
+	printf("Address Of Original Text: %p\n", pBuffer);
 	strcat_s(pBuffer, buffer_size, string1);
 	strcat_s(pBuffer, buffer_size, string2);
 	strcat_s(pBuffer, buffer_size, string3);
@@ -50,33 +54,61 @@ int main()
 	strcat_s(pBuffer, buffer_size, string5);
 	PrintContentAddressCall("pBuffer", "strcpy_s() & strat_s", pBuffer, "VirtualAlloc");
 	printf("Calling VirtualAlloc");
-	void* vpBuffer = VirtualAlloc(0, buffer_size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+	//VirtualAllocate()
+	PVOID vpBuffer = VirtualAlloc(0, buffer_size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
 	if (!vpBuffer) {
-		return ThrowMemoryError(3, " Virtual ");
+		return ThrowMemoryError(2, " Virtual ");
 	}
 	printf("Calling memcpy()...\n");
+	//malloc => VirtualAlloc()
 	memcpy(vpBuffer, pBuffer, buffer_size);
 	printf("Finished memcpy()!\nCalling SecureZeroMemory()...\n");
+	//malloc SecureZeroMemory
 	SecureZeroMemory(pBuffer, strlen(pBuffer));
 	PrintContentAddressCall("pBuffer", "SecureZeroMemory", pBuffer, "free");
+	//free()
 	free(pBuffer);
 	PrintFreed("\"pBuffer\" / Heap Memory");
-	printf("Calling HeapAlloc...");
 	printf("Calling GetProcessHeap()...");
-	void *hpBuffer = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, buffer_size);
+	//GetProccessHeap()
+	HANDLE hHeap = GetProcessHeap();
+	printf("Heap Handle: %p\n", hHeap);
+	//HeapAlloc()
+	PVOID hpBuffer = HeapAlloc(hHeap, 0, buffer_size);
 	if (!hpBuffer) {
-		return ThrowMemoryError(4, " Heap ");
+		return ThrowMemoryError(3, " Heap ");
 	}
-	PrintContentAddressCall("vpBuffer", "memcpy", vpBuffer, "SecureZeroMemory");
-	SecureZeroMemory(vpBuffer, buffer_size);
+	
 	PrintContentAddressCall("vpBuffer", "SecureZeroMemory", vpBuffer, "VirtualFree");
+	//VirtualAlloc => HeapAlloc
+	memcpy(hpBuffer, vpBuffer, buffer_size);
+	//Virtual SecureZeroMemory()
+	SecureZeroMemory(vpBuffer, buffer_size);
+	PrintContentAddressCall("hpBuffer", "memcpy", hpBuffer, "SecureZeroMemory");
+	
+	//VirtualFree()
 	VirtualFree(vpBuffer, 0, MEM_FREE);
 	PrintFreed("\"vpBuffer\" / Virtual Memory");
+	//LocalAlloc()
+	printf("Calling LocalAlloc()...\n");
+	PVOID pLocalBuffer = LocalAlloc(LMEM_FIXED, buffer_size);
+	if (!pLocalBuffer) {
+		ThrowMemoryError(4, "pLocalAlloc");
+	}
+	//HeapAlloc=>LocalAlloc
+	LPVOID pTemp = VirtualAlloc(0, buffer_size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+	memcpy(pTemp, hpBuffer, buffer_size);
+	memcpy(pLocalBuffer, pTemp, buffer_size);
+	PrintContentAddressCall("pLocalBuffer", "VirtualFree", pLocalBuffer, "memcpy");
+	//Heap SecureZeroMemory
+	SecureZeroMemory(hpBuffer, buffer_size);
+	//HeapFree()
 	
+	HeapFree(hHeap, 0, hpBuffer);
+	//Local SecureZeroMemory
+	SecureZeroMemory(pLocalBuffer, buffer_size);
+	//LocalFree()
+	LocalFree(pLocalBuffer);
 	printf("Exiting Program With code 0\n");
 	return 0;
   }
-
-
-
-
