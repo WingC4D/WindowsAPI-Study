@@ -78,14 +78,12 @@ int main()
 	if (!hpBuffer) {
 		return ThrowMemoryError(3, " Heap ");
 	}
-	
 	PrintContentAddressCall("vpBuffer", "SecureZeroMemory", vpBuffer, "VirtualFree");
 	//VirtualAlloc => HeapAlloc
 	memcpy(hpBuffer, vpBuffer, buffer_size);
 	//Virtual SecureZeroMemory()
 	SecureZeroMemory(vpBuffer, buffer_size);
-	PrintContentAddressCall("hpBuffer", "memcpy", hpBuffer, "SecureZeroMemory");
-	
+	PrintContentAddressCall("hpBuffer", "memcpy", hpBuffer, "SecureZeroMemory")
 	//VirtualFree()
 	VirtualFree(vpBuffer, 0, MEM_FREE);
 	PrintFreed("\"vpBuffer\" / Virtual Memory");
@@ -119,11 +117,9 @@ int main()
 	RtlFillMemory(pLocalBuffer, buffer_size, 0);
 	/*making Sure the Compiler doesn't optimize away the RtlFillMemory Call 
 	by making sure to refrence the filled to memory*/
-	printf("LocalBuffer's Contet After Calling RtlFillMemory: %d | %s |\nLocalBuffer's Address: %p\n", pLocalBuffer, pLocalBuffer, pLocalBuffer);
-	//PrintContentAddressCall("pLocalBuffer", "VirtualFree", pLocalBuffer, "memcpy");
-	
+	PrintContentAddressCall("pLocalBuffer", "RtlFillMemory", pLocalBuffer, "memcpy");
 	//Heap SecureZeroMemory
-	RtlFillMemory(hpBuffer, buffer_size, 0);
+	SecureZeroMemory(hpBuffer, buffer_size, 0);
 	HeapFree(hHeap, HEAP_ZERO_MEMORY, hpBuffer);
 	//LocalFree()
 	LocalFree(pLocalBuffer);
