@@ -83,7 +83,7 @@ int main()
 	memcpy(hpBuffer, vpBuffer, buffer_size);
 	//Virtual SecureZeroMemory()
 	SecureZeroMemory(vpBuffer, buffer_size);
-	PrintContentAddressCall("hpBuffer", "memcpy", hpBuffer, "SecureZeroMemory")
+	PrintContentAddressCall("hpBuffer", "memcpy", hpBuffer, "SecureZeroMemory");
 	//VirtualFree()
 	VirtualFree(vpBuffer, 0, MEM_FREE);
 	PrintFreed("\"vpBuffer\" / Virtual Memory");
@@ -119,7 +119,7 @@ int main()
 	by making sure to refrence the filled to memory*/
 	PrintContentAddressCall("pLocalBuffer", "RtlFillMemory", pLocalBuffer, "memcpy");
 	//Heap SecureZeroMemory
-	SecureZeroMemory(hpBuffer, buffer_size, 0);
+	SecureZeroMemory(hpBuffer, buffer_size);
 	HeapFree(hHeap, HEAP_ZERO_MEMORY, hpBuffer);
 	//LocalFree()
 	LocalFree(pLocalBuffer);
