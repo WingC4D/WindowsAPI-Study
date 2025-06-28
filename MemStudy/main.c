@@ -95,21 +95,47 @@ int main()
 	if (!pLocalBuffer) {
 		ThrowMemoryError(4, "pLocalAlloc");
 	}
-	//HeapAlloc=>LocalAlloc
+	/*HeapAlloc => Temporary Virtual Buffer 
+	As LocalAlloc alloctes memory to to the Heap and so does HeapAlloc.
+	The MSDN Manual for the Local Alloc Clearly states not to use this function unless specifcally asked to do so.
+	This is a study case  for how the Windows OS Allocates memory at the lowst level available to me (x64dbg).
+	*/
 	LPVOID pTemp = VirtualAlloc(0, buffer_size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+	if (!pTemp) {
+		ThrowMemoryError(5, "Temporary Virtual");
+	}
+	//copying out to Virtual Memory.
 	memcpy(pTemp, hpBuffer, buffer_size);
+	//copying back into the heap
 	memcpy(pLocalBuffer, pTemp, buffer_size);
-	PrintContentAddressCall("pLocalBuffer", "VirtualFree", pLocalBuffer, "memcpy");
-	//Heap SecureZeroMemory
-	SecureZeroMemory(hpBuffer, buffer_size);
-	//HeapFree()
 	
+	PrintContentAddressCall("pTemp", "RtlFillMemory", pTemp, "RtlFillMemory");
+	//Calling SecureZeroMemory(pTemp)
+	SecureZeroMemory(pTemp, buffer_size);
+	//freeing pTemp;
+	VirtualFree(pTemp, buffer_size, MEM_FREE);
+	PrintContentAddressCall("pTemp", "SecureZeroMemory(pTemp)", pLocalBuffer, "rtlFillMemoryBuffer");
+	//using RtlFillMemory With 0 and the buffer's size as an alternative for SecureZeroMemory (Testing)
+	RtlFillMemory(pLocalBuffer, buffer_size, 0);
+	/*making Sure the Compiler doesn't optimize away the RtlFillMemory Call 
+	by making sure to refrence the filled to memory*/
+	printf("LocalBuffer's Contet After Calling RtlFillMemory: %d | %s |\nLocalBuffer's Address: %p\n", pLocalBuffer, pLocalBuffer, pLocalBuffer);
+	//PrintContentAddressCall("pLocalBuffer", "VirtualFree", pLocalBuffer, "memcpy");
+	
+	//Heap SecureZeroMemory
+	RtlFillMemory(hpBuffer, buffer_size, 0);
 	HeapFree(hHeap, HEAP_ZERO_MEMORY, hpBuffer);
-	//Local SecureZeroMemory
-	SecureZeroMemory(pLocalBuffer, buffer_size);
 	//LocalFree()
 	LocalFree(pLocalBuffer);
+	//NOP (no operation x86 assembly) shell code trail and error.
+	char nopsled[42];
+	RtlFillMemory(nopsled, 42, 0x90);
+	printf("NOP Sled?:\n");
+	for (int i = 0; i < 42; ++i) {
+		printf("%02X\n", nopsled[i]);
+	}
+	SecureZeroMemory(nopsled, 42);
+	printf("%42X\n", nopsled);
 	printf("Exiting Program With code 0\n");
 	return 0;
   }
-
